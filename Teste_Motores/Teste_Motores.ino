@@ -62,13 +62,25 @@ void setup(void)
 
 void loop(void)
 {
+  //  AndaFrente(); //move forward in max speed
+  //  delay(4000);
+  //  MarchaRe(); //move back in max speed
+  //  delay(4000);
+  //  Esquerda();
+  //  delay(750);
+  //  Direita();
+  //  delay(750);
+  //  stop();
+
   AndaFrente(); //move forward in max speed
-  delay(4000);
-  MarchaRe(); //move back in max speed
-  delay(4000);
+  delay(1000);
   Esquerda();
-  delay(4000);
+  delay(400);
+  AndaFrente(); //move forward in max speed
+  delay(1000);
   Direita();
-  delay(4000);
+  delay(400);
+  MarchaRe(); //move back in max speed
+  delay(1000);
   stop();
 }
