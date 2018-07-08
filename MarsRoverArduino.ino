@@ -283,7 +283,7 @@ void obstacleavoidance()
   serial.print("Há objeto a uma distancia de ");
   serial.print(distance); // Informa a distância medida no
   serial.println(" cm a frente"); // serial monitor
-  
+
   delay (50);// check for objects
 
   if (distance > 30)
@@ -344,13 +344,23 @@ void comparison()
   if (leftLook > rightLook)
   {
     turnLeft();
-    delay(750);
+    delay(400);
+
+    //Talvez não seja necessário este delay
+    moveStop();
+    delay(350);
+    
     obstacleavoidance();
   }
   else if (leftLook < rightLook)
   {
     turnRight();
-    delay(750);
+    delay(400);
+
+    //Talvez não seja necessário este delay
+    moveStop();
+    delay(350);
+    
     obstacleavoidance();
   }
   else if (leftLook < 15 && rightLook < 15)
