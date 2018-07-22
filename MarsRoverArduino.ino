@@ -311,9 +311,9 @@ void distances()
 
   myservo.write(90);
   delay(500);
+  
   myservo.write(10);//take distances from the right side
   delay(350);
-
   rightLook = readPing();
 
   serial.print("Há objeto a uma distancia de ");
@@ -345,10 +345,6 @@ void comparison()
   {
     turnLeft();
     delay(400);
-
-    //Talvez não seja necessário este delay
-    moveStop();
-    delay(350);
     
     obstacleavoidance();
   }
@@ -356,10 +352,6 @@ void comparison()
   {
     turnRight();
     delay(400);
-
-    //Talvez não seja necessário este delay
-    moveStop();
-    delay(350);
     
     obstacleavoidance();
   }
