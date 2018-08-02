@@ -1,86 +1,122 @@
+//Controle 2 motores DC usando Ponte H L298N
+
+/*
+                      +-----+
+         +------------| USB |------------+
+         |            +-----+            |
+    B5   | [ ]D13/SCK        MISO/D12[ ] |   B4
+         | [ ]3.3V           MOSI/D11[H]~|   B3
+         | [ ]V.ref     ___    SS/D10[H]~|   B2
+    C0   | [ ]A0       / N \       D9[H]~|   B1
+    C1   | [ ]A1      /  A  \      D8[ ] |   B0
+    C2   | [ ]A2      \  N  /      D7[ ] |   D7
+    C3   | [ ]A3       \_0_/       D6[ ]~|   D6
+    C4   | [ ]A4/SDA               D5[ ]~|   D5
+    C5   | [ ]A5/SCL               D4[H] |   D4
+         | [ ]A6              INT1/D3[H]~|   D3
+         | [ ]A7              INT0/D2[H] |   D2
+         | [ ]5V                  GND[ ] |
+    C6   | [ ]RST                 RST[ ] |   C6
+         | [ ]GND   5V MOSI GND   TX1[ ] |   D0
+         | [ ]Vin   [ ] [ ] [ ]   RX1[ ] |   D1
+         |          [ ] [ ] [ ]          |
+         |          MISO SCK RST         |
+         | NANO-V3                       |
+         +-------------------------------+
+
+         http://busyducks.com/ascii-art-arduinos
+*/
+
+#include <Ultrasonic.h>
+#include <Servo.h>
+#include <SoftwareSerial.h>
+#include <L298N.h>
+
 //=============
 // [H] H-Bridge
 //=============
 //Motor A
-int IN1 = 11;
-int IN2 = 10;
+#define ENA 11
+#define IN1 9
+#define IN2 10
 
 //Motor B
-int IN3 = 9;
-int IN4 = 8;
+#define ENB 3
+#define IN3 4
+#define IN4 2
+
+//========================
+//create a motor instances
+//========================
+L298N motorA(ENA, IN1, IN2);
+L298N motorB(ENB, IN3, IN4);
 
 void stop() //stop
 {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, LOW);
+  //stop running
+  motorA.stop();
+  motorB.stop();
 }
 
 void AndaFrente() //Anda Para Frente
 {
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
+  //tell the motorA to go forward
+  motorA.forward();
+
+  //tell the motorB to go forward
+  motorB.forward();
 }
 
 void MarchaRe() //Move para trás
 {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+  //tell the motorA to go back
+  motorA.backward();
+
+  //tell the motorB to go back
+  motorB.backward();
 }
 
 void Esquerda() //Vira a esquerda
 {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
+  //tell the motorA to go back
+  motorA.backward();
+
+  //tell the motorB to go forward
+  motorB.forward();
 }
 
 void Direita() //Vira a direita
 {
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+  //tell the motorA to go forward
+  motorA.forward();
+
+  //tell the motorB to go back
+  motorB.backward();
 }
 
-void setup(void)
+void setup()
 {
-  int i; //contador utilizado pelo For a seguir
-
-  //Setando pinos de 8 a 11, como saída (OUTPUT)
-  for (i = 8; i <= 11; i++)
-    pinMode(i, OUTPUT);
-  Serial.begin(9600); //Set Baud Rate
-  Serial.println("Controle via teclado");
+  // an integer between 0 and 255
+  motorA.setSpeed(70);
+  motorB.setSpeed(70);
 }
 
-void loop(void)
+void loop()
 {
-  //  AndaFrente(); //move forward in max speed
-  //  delay(4000);
-  //  MarchaRe(); //move back in max speed
-  //  delay(4000);
-  //  Esquerda();
-  //  delay(750);
-  //  Direita();
-  //  delay(750);
-  //  stop();
-
   AndaFrente(); //move forward in max speed
   delay(1000);
+
   Esquerda();
   delay(400);
+
   AndaFrente(); //move forward in max speed
   delay(1000);
+
   Direita();
   delay(400);
+
   MarchaRe(); //move back in max speed
   delay(1000);
+
   stop();
 }
