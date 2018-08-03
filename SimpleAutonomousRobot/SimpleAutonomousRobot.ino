@@ -45,7 +45,7 @@ NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 //==================================================
 // [S] pino de controle do servo conectado ao pino 7
 //==================================================
-int servo = 7;
+#define servo 7
 Servo myservo;
 
 //=============
@@ -77,8 +77,8 @@ void setup()
   //================
   // [S] Servo Motor
   //================
-  myservo.attach(7);
-  myservo.write(115);
+  myservo.attach(servo);
+  myservo.write(90);
   delay(2000);
 
   //===============================
@@ -106,7 +106,7 @@ void loop()
   int distanceL =  0;
   delay(40);
 
-  if (distance <= 20)
+  if (distance <= 30)
   {
     moveStop();
     delay(100);
@@ -123,14 +123,20 @@ void loop()
     distanceL = lookLeft();
     delay(200);
 
-    if (distanceR >= distanceL)
+    if (distanceR >= distanceL && distanceR > 30)
     {
       turnRight();
       moveStop();
     }
-    else
+    else if (distanceL > 30)
     {
       turnLeft();
+      moveStop();
+    }
+    else
+    {
+      moveBackward();
+      delay(600);
       moveStop();
     }
   }
@@ -144,13 +150,13 @@ void loop()
 
 int lookRight()
 {
-  myservo.write(50);
+  myservo.write(10);
   delay(500);
 
   int distance = readPing();
   delay(100);
 
-  myservo.write(115);
+  myservo.write(90);
   return distance;
 }
 
@@ -162,7 +168,7 @@ int lookLeft()
   int distance = readPing();
   delay(100);
 
-  myservo.write(115);
+  myservo.write(90);
   return distance;
   delay(100);
 }
