@@ -30,38 +30,46 @@
          http://busyducks.com/ascii-art-arduinos
 */
 
+#include <NewPing.h>
+
 //====================
 // [D] Distance Sensor
 //====================
-#define TrigPin A4 //Envia o pulso - Sensor Ultrassônico
-#define EchoPin A5 // Lê o pulso - Sensor Ultrassônico
+#define TRIG_PIN A4
+#define ECHO_PIN A5
+#define MAX_DISTANCE 200
+NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
-int _DistanciaObstaculo = 0;
+//=================
+// Varáveis Globais
+//=================
+float distance;
 
-void setup(){
+void setup()
+{
   Serial.begin(9600); //Inicia a Portal Serial
-  pinMode (TrigPin, OUTPUT); //Seta pino como entrada do Sensor Ultrassonico
-  pinMode (EchoPin, INPUT); //Seta pino como saída  do Sensor Ultrassonico 
+  pinMode (TRIG_PIN, OUTPUT); //Seta pino como entrada do Sensor Ultrassonico
+  pinMode (ECHO_PIN, INPUT); //Seta pino como saída  do Sensor Ultrassonico 
 }
 
-void loop(){
-  SensorUltrassonico();
+void loop()
+{
+  distance = readPing();
   Serial.print("Distancia do obstaculo: ");
-  Serial.println(_DistanciaObstaculo);
+  Serial.println(distance); 
   delay(500);
 }
 
-//SENSOR ULTRASSONICO
-int SensorUltrassonico() //Faz o disparo de pulsos e retorna o tempo em microsegundos
+// Lê Objetos Próximos
+int readPing()
 {
-  digitalWrite(TrigPin, LOW);
-  delay(2);
-  digitalWrite(TrigPin, HIGH);
-  delay(10);
-  digitalWrite(TrigPin, LOW);
-  unsigned long Duracao = pulseIn (EchoPin, HIGH);
-  delay(4);
-  _DistanciaObstaculo = Duracao/58; //Acha a distancia em centímetros.
-  return _DistanciaObstaculo;
-  delay(10);
+  delay(70);
+  int cm = sonar.ping_cm();
+
+  if (cm == 0)
+  {
+    cm = 250;
+  }
+
+  return cm;
 }
