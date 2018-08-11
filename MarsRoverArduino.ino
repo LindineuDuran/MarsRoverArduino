@@ -28,7 +28,7 @@
          http://busyducks.com/ascii-art-arduinos
 */
 
-#include <NewPing.h>
+#include <NewPing.h> //#define TIMER_ENABLED false      // Set to "false" to disable the timer ISR (if getting "__vector_7" compile errors set this to false). Default=true
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <L298N.h>
@@ -102,7 +102,7 @@ int duracaodasnotas[] = {100, 100, 100, 100, 100, 100, 100};
 //=================
 float distance;
 int autoMode = 0; //Indica quando o modo autônomo está ativado.
-
+int velocidade = 70; //Velocidade dos Motores
 //=======================================================================
 // Variáveis para Delay usando Milli()
 // Generally, you should use "unsigned long" for variables that hold time
@@ -134,8 +134,8 @@ void setup()
   //===============================
   //Define a velocidade dos motores
   //===============================
-  motorA.setSpeed(70); //Para bateria carregada, usar valor = 70
-  motorB.setSpeed(70); //Para bateria carregada, usar valor = 70
+  motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+  motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
 
   //============================================
   // Pino 12 do arduino como saída para o Buzzer
@@ -172,7 +172,7 @@ void loop()
     {
       case 'A' : //Se 'A' for recebido, define o modo autônomo
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Autonomous Mode");
+        serial.println("Autonomous Mode");
 
         // Define Modo Autônomo
         autoMode = 1;
@@ -180,7 +180,7 @@ void loop()
 
       case 'a' : //Se 'a' for recebido, define o modo manual
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Manual Mode");
+        serial.println("Manual Mode");
 
         // Define Modo Manual
         autoMode = 0;
@@ -194,7 +194,7 @@ void loop()
 
       case 'F' : //Se 'F' for recebido, vai para Frente
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Move Forward");
+        serial.println("Move Forward");
 
         // Move Forward
         moveForward();
@@ -206,7 +206,7 @@ void loop()
 
       case 'T' : //Se 'T' for recebido, vai para Trás
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Move Backward");
+        serial.println("Move Backward");
 
         //Move Backward
         moveBackward();
@@ -218,7 +218,7 @@ void loop()
 
       case 'E' : //Se 'E' for recebido, vira para Esquerda
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Move Left");
+        serial.println("Move Left");
 
         //Move Left
         turnLeft();
@@ -230,7 +230,7 @@ void loop()
 
       case 'D' : //Se 'D' for recebido, vira para Direita
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Move Right");
+        serial.println("Move Right");
 
         //Move Right
         turnRight();
@@ -242,7 +242,7 @@ void loop()
 
       case 'P' : //Se 'P' for recebido, Pára o Movimento
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Stop the Move");
+        serial.println("Stop the Move");
 
         //Move Stop
         moveStop();
@@ -254,7 +254,7 @@ void loop()
 
       case 'B' : //Se 'B' for recebido, Toca a Buzina
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Play the Buzzer");
+        serial.println("Play the Buzzer");
 
         //Play the Buzzer
         playBuzzer();
@@ -263,10 +263,50 @@ void loop()
 
       case 'M' : //Se 'M' for recebido, Toca a Música
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Play the Music");
+        serial.println("Play the Music");
 
         //Play Super Mario Theme
         playSuperMarioTheme();
+
+        break;
+
+      case 'V' : //Se 'V' for recebido, Aumenta a Velocidade
+        //Mensagem será enviada para o módulo HC-06 e daí para o Android.
+        serial.print("Velocidade: ");
+        serial.println(velocidade);
+
+        //Aumenta a Velocidade
+        velocidade += 10;
+        if (velocidade > 250)
+        {
+          velocidade = 250;
+        }
+
+        //=================================
+        //Redefine a velocidade dos motores
+        //=================================
+        motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+        motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+
+        break;
+
+      case 'v' : //Se 'v' for recebido, Diminui a Velocidade
+        //Mensagem será enviada para o módulo HC-06 e daí para o Android.
+        serial.print("Velocidade: ");
+        serial.println(velocidade);
+
+        //Aumenta a Velocidade
+        velocidade -= 10;
+        if (velocidade < 0)
+        {
+          velocidade = 0;
+        }
+
+        //=================================
+        //Redefine a velocidade dos motores
+        //=================================
+        motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+        motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
 
         break;
     }
@@ -289,7 +329,7 @@ void loop()
     {
       case 'A' : //Se 'A' for recebido, define o modo Autônomo
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Autonomous Mode");
+        serial.println("Autonomous Mode");
 
         // Define Modo Autônomo
         autoMode = 1;
@@ -297,7 +337,7 @@ void loop()
 
       case 'a' : //Se 'a' for recebido, define o modo manual
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
-        serial.print("Manual Mode");
+        serial.println("Manual Mode");
 
         // Define Modo Manual
         autoMode = 0;
@@ -307,6 +347,46 @@ void loop()
 
         //Play the Buzzer
         playBuzzer();
+        break;
+
+      case 'V' : //Se 'V' for recebido, Aumenta a Velocidade
+        //Mensagem será enviada para o módulo HC-06 e daí para o Android.
+        serial.print("Velocidade: ");
+        serial.println(velocidade);
+
+        //Aumenta a Velocidade
+        velocidade += 10;
+        if (velocidade > 250)
+        {
+          velocidade = 250;
+        }
+
+        //=================================
+        //Redefine a velocidade dos motores
+        //=================================
+        motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+        motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+
+        break;
+
+      case 'v' : //Se 'v' for recebido, Diminui a Velocidade
+        //Mensagem será enviada para o módulo HC-06 e daí para o Android.
+        serial.print("Velocidade: ");
+        serial.println(velocidade);
+
+        //Aumenta a Velocidade
+        velocidade -= 10;
+        if (velocidade < 0)
+        {
+          velocidade = 0;
+        }
+
+        //=================================
+        //Redefine a velocidade dos motores
+        //=================================
+        motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+        motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
+
         break;
     }
   }
