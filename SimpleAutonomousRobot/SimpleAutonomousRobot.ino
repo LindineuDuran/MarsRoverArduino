@@ -1,6 +1,6 @@
-//This is the code for the robot
-// make sure to  include the NewPing and Servo Libraries  before uploading else it will show error
-//Controle 2 motores DC usando Ponte H L298N
+// Esse é o código do robô
+// certifique-se de incluir as Bibliotecas do NewPing e do Servo antes de fazer o upload. Caso contrário, ele mostrará erro
+// Controle 2 motores DC usando Ponte H L298N
 
 /*
                       +-----+
@@ -39,6 +39,7 @@
 //====================
 #define TRIG_PIN A4
 #define ECHO_PIN A5
+#define MIN_DISTANCE 30
 #define MAX_DISTANCE 200
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
@@ -79,7 +80,6 @@ void setup()
   //================
   myservo.attach(servo);
   myservo.write(90);
-  delay(2000);
 
   //===============================
   //Define a velocidade dos motores
@@ -88,47 +88,36 @@ void setup()
   motorB.setSpeed(70);
 
   distance = readPing();
-  delay(100);
-
-  distance = readPing();
-  delay(100);
-
-  distance = readPing();
-  delay(100);
-
-  distance = readPing();
-  delay(100);
 }
 
 void loop()
 {
   int distanceR = 0;
   int distanceL =  0;
-  delay(40);
 
-  if (distance <= 30)
+  if (distance <= MIN_DISTANCE)
   {
     moveStop();
-    delay(100);
+    pausa(100);
 
     moveBackward();
-    delay(600);
+    pausa(600);
 
     moveStop();
-    delay(200);
+    pausa(200);
 
-    distanceR = lookRight();
-    delay(200);
+    distanceR = lookSide(10);
+    pausa(200);
 
-    distanceL = lookLeft();
-    delay(200);
+    distanceL = lookSide(170);
+    pausa(200);
 
-    if (distanceR >= distanceL && distanceR > 30)
+    if (distanceR >= distanceL && distanceR > MIN_DISTANCE)
     {
       turnRight();
       moveStop();
     }
-    else if (distanceL > 30)
+    else if (distanceL > MIN_DISTANCE)
     {
       turnLeft();
       moveStop();
@@ -136,7 +125,7 @@ void loop()
     else
     {
       moveBackward();
-      delay(600);
+      pausa(600);
       moveStop();
     }
   }
@@ -148,41 +137,40 @@ void loop()
   distance = readPing();
 }
 
-int lookRight()
+// Olha para o Lado
+int lookSide(int angulo)
 {
-  myservo.write(10);
-  delay(500);
+  myservo.write(angulo);
 
   int distance = readPing();
-  delay(100);
+  pausa(300);
 
+  //Retorna Servo para posição inicial
   myservo.write(90);
+
   return distance;
-}
-
-int lookLeft()
-{
-  myservo.write(170);
-  delay(500);
-
-  int distance = readPing();
-  delay(100);
-
-  myservo.write(90);
-  return distance;
-  delay(100);
 }
 
 int readPing()
 {
-  delay(70);
+  pausa(70);
   int cm = sonar.ping_cm();
-
-  if (cm == 0)
-  {
-    cm = 250;
-  }
   return cm;
+}
+
+void pausa(unsigned int milisegundos)
+{
+  volatile unsigned long compara = 0;
+  volatile int contador = 0;
+  do
+  {
+    if (compara != millis())
+    {
+      contador++;
+      compara = millis();
+    }
+  } while (contador <= milisegundos);
+  return;
 }
 
 void moveStop()
@@ -212,7 +200,7 @@ void turnRight()
   motorA.forward();
   motorB.backward();
 
-  delay(350);
+  pausa(350);
   moveForward();
 }
 
@@ -222,6 +210,6 @@ void turnLeft()
   motorA.backward();
   motorB.forward();
 
-  delay(350);
+  pausa(350);
   moveForward();
 }
