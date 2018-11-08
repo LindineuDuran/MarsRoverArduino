@@ -28,7 +28,7 @@
          http://busyducks.com/ascii-art-arduinos
 */
 
-#include <NewPing.h> //#define TIMER_ENABLED false      // Set to "false" to disable the timer ISR (if getting "__vector_7" compile errors set this to false). Default=true
+#include <NewPing.h> //#define TIMER_ENABLED false // Set to "false" to disable the timer ISR (if getting "__vector_7" compile errors set this to false). Default=true
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <L298N.h>
@@ -38,6 +38,7 @@
 //====================
 #define TRIG_PIN A4
 #define ECHO_PIN A5
+#define MIN_DISTANCE 30
 #define MAX_DISTANCE 200
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
@@ -62,10 +63,10 @@ Servo myservo;
 //=========================================
 #define LedEstado 8
 
-//=====================================================
+//======================================================
 // [H] H-Bridge
-//Definicoes pinos Arduino ligados a entrada da Ponte H
-//=====================================================
+// Definicoes pinos Arduino ligados a entrada da Ponte H
+//======================================================
 //Motor A
 #define ENA 11
 #define IN1 9
@@ -76,9 +77,9 @@ Servo myservo;
 #define IN3 4
 #define IN4 2
 
-//========================
-//create a motor instances
-//========================
+//===========================
+// create the motor instances
+//===========================
 L298N motorA(ENA, IN1, IN2);
 L298N motorB(ENB, IN3, IN4);
 
@@ -100,18 +101,9 @@ int duracaodasnotas[] = {100, 100, 100, 100, 100, 100, 100};
 //=================
 // Varáveis Globais
 //=================
-float distance;
+int distance = 100;
 int autoMode = 0; //Indica quando o modo autônomo está ativado.
 int velocidade = 70; //Velocidade dos Motores
-//=======================================================================
-// Variáveis para Delay usando Milli()
-// Generally, you should use "unsigned long" for variables that hold time
-// The value will quickly become too large for an int to store
-//=======================================================================
-unsigned long previousMillis = 0; // will store last time LED was updated
-
-// constants won't change :
-const long interval = 300; // interval at which to blink (milliseconds)
 
 void setup()
 {
@@ -146,29 +138,19 @@ void setup()
   // Realiza uma primeira leitura de distância
   //==========================================
   distance = readPing();
-  delay(100);
 }
 
 void loop()
 {
-  //Criando uma variável do tipo caracter
-  char z;
+  //Criando uma variável do tipo caracter para receber o comando
+  static char cmd;
 
   if (autoMode == 0) //MODO BLUETOOTH
   {
-    // Com millis()
-    unsigned long currentMillis = millis();
+    //Variável 'cmd' recebe o valor da porta Serial
+    cmd = serial.read();
 
-    if (currentMillis - previousMillis >= interval)
-    {
-      // save the last time you blinked the LED
-      previousMillis = currentMillis;
-
-      //Variável 'z' recebe o valor da porta Serial
-      z = serial.read();
-    }
-
-    switch (z)
+    switch (cmd)
     {
       case 'A' : //Se 'A' for recebido, define o modo autônomo
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
@@ -201,7 +183,6 @@ void loop()
 
         //Acende o LED.
         digitalWrite(LedEstado, HIGH);
-
         break;
 
       case 'T' : //Se 'T' for recebido, vai para Trás
@@ -213,7 +194,6 @@ void loop()
 
         //Acende o LED.
         digitalWrite(LedEstado, HIGH);
-
         break;
 
       case 'E' : //Se 'E' for recebido, vira para Esquerda
@@ -225,7 +205,6 @@ void loop()
 
         //Acende o LED.
         digitalWrite(LedEstado, HIGH);
-
         break;
 
       case 'D' : //Se 'D' for recebido, vira para Direita
@@ -237,7 +216,6 @@ void loop()
 
         //Acende o LED.
         digitalWrite(LedEstado, HIGH);
-
         break;
 
       case 'P' : //Se 'P' for recebido, Pára o Movimento
@@ -249,7 +227,6 @@ void loop()
 
         //Apaga o LED.
         digitalWrite(LedEstado, LOW);
-
         break;
 
       case 'B' : //Se 'B' for recebido, Toca a Buzina
@@ -258,7 +235,6 @@ void loop()
 
         //Play the Buzzer
         playBuzzer();
-
         break;
 
       case 'M' : //Se 'M' for recebido, Toca a Música
@@ -267,7 +243,6 @@ void loop()
 
         //Play Super Mario Theme
         playSuperMarioTheme();
-
         break;
 
       case 'V' : //Se 'V' for recebido, Aumenta a Velocidade
@@ -287,7 +262,6 @@ void loop()
         //=================================
         motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
         motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
-
         break;
 
       case 'v' : //Se 'v' for recebido, Diminui a Velocidade
@@ -307,25 +281,15 @@ void loop()
         //=================================
         motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
         motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
-
         break;
     }
   }
   else if (autoMode == 1) //MODO AUTÔNOMO
   {
-    // Com millis()
-    unsigned long currentMillis = millis();
+    //Variável 'cmd' recebe o valor da porta Serial
+    cmd = serial.read();
 
-    if (currentMillis - previousMillis >= interval)
-    {
-      // save the last time you blinked the LED
-      previousMillis = currentMillis;
-
-      //Variável 'z' recebe o valor da porta Serial
-      z = serial.read();
-    }
-
-    switch (z)
+    switch (cmd)
     {
       case 'A' : //Se 'A' for recebido, define o modo Autônomo
         //Mensagem será enviada para o módulo HC-06 e daí para o Android.
@@ -347,6 +311,9 @@ void loop()
 
         //Play the Buzzer
         playBuzzer();
+
+        //        //Retorna Servo para posição inicial
+        //        myservo.write(90);
         break;
 
       case 'V' : //Se 'V' for recebido, Aumenta a Velocidade
@@ -366,7 +333,6 @@ void loop()
         //=================================
         motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
         motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
-
         break;
 
       case 'v' : //Se 'v' for recebido, Diminui a Velocidade
@@ -386,7 +352,6 @@ void loop()
         //=================================
         motorA.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
         motorB.setSpeed(velocidade); //Para bateria carregada, usar valor = 70
-
         break;
     }
   }
@@ -396,47 +361,49 @@ void loop()
     digitalWrite(LedEstado, HIGH); //Acende o LED quando o robô entrar  no modo autônomo.
     obstacleavoidance();
   }
+
+  //Delay(200)
+  pausa(200);
 }
 
 void obstacleavoidance()
 {
   int distanceR = 0;
   int distanceL =  0;
-  delay(40);
 
-  if (distance <= 30 || distance >= 250)
+  if (distance <= MIN_DISTANCE)
   {
     moveStop();
-    delay(100);
-
     moveBackward();
-    delay(600);
+
+    //delay(300) - Recua por 300 milisegundos e pára
+    pausa(300);
 
     moveStop();
-    delay(200);
 
-    distanceR = lookRight();
-    delay(200);
+    //Verifica distância à direita
+    distanceR = lookSide(10);
 
-    distanceL = lookLeft();
-    delay(200);
+    //delay(200) - Espera 200 milisegundos
+    pausa(200);
 
-    if (distanceR >= distanceL && distanceR > 30 && distanceR < 250)
+    //Verifica distância à esquerda
+    distanceL = lookSide(170);
+
+    if (distanceR >= distanceL && distanceR > MIN_DISTANCE)
     {
       serial.print("Distancia do obstaculo a DIREITA: ");
       serial.println(distanceR);
 
       turnRight();
-      delay(500);
       moveStop();
     }
-    else if (distanceL > 30 && distanceL < 250)
+    else if (distanceL > MIN_DISTANCE)
     {
       serial.print("Distancia do obstaculo a ESQUERDA: ");
       serial.println(distanceL);
 
       turnLeft();
-      delay(500);
       moveStop();
     }
     else
@@ -445,7 +412,10 @@ void obstacleavoidance()
       serial.println(distance);
 
       moveBackward();
-      delay(500);
+
+      //delay(300) - Recua por 500 milisegundos e pára
+      pausa(300);
+
       moveStop();
     }
   }
@@ -460,45 +430,43 @@ void obstacleavoidance()
   distance = readPing();
 }
 
-// Olha a direita
-int lookRight()
+// Olha para o Lado
+int lookSide(int angulo)
 {
-  myservo.write(10);
-  delay(500);
+  myservo.write(angulo);
 
   int distance = readPing();
-  delay(100);
 
+  //delay(300) - tempAux
+  pausa(300);
+
+  //Retorna Servo para posição inicial
   myservo.write(90);
+
   return distance;
-}
-
-// Olha a esquerda
-int lookLeft()
-{
-  myservo.write(170);
-  delay(500);
-
-  int distance = readPing();
-  delay(100);
-
-  myservo.write(90);
-  return distance;
-  delay(100);
 }
 
 // Lê Objetos Próximos
 int readPing()
 {
-  delay(70);
+  pausa(70);
   int cm = sonar.ping_cm();
-
-  if (cm == 0)
-  {
-    cm = 250;
-  }
-
   return cm;
+}
+
+void pausa(unsigned int milisegundos)
+{
+  volatile unsigned long compara = 0;
+  volatile int contador = 0;
+  do
+  {
+    if (compara != millis())
+    {
+      contador++;
+      compara = millis();
+    }
+  } while (contador <= milisegundos);
+  return;
 }
 
 void moveStop()
@@ -527,6 +495,9 @@ void turnRight()
   //Move Right
   motorA.forward();
   motorB.backward();
+
+  pausa(350);
+  moveForward();
 }
 
 void turnLeft()
@@ -534,6 +505,9 @@ void turnLeft()
   //Move Left
   motorA.backward();
   motorB.forward();
+
+  pausa(350);
+  moveForward();
 }
 
 void playBuzzer()
@@ -545,15 +519,21 @@ void playBuzzer()
   */
   //aqui sai o som
   tone(buzzer, 300, 300);
-  delay(500);
+
+  //delay(500)
+  pausa(500);
 
   //aqui sai o som
   tone(buzzer, 100, 300);
-  delay(500);
+
+  //delay(500);
+  pausa(500);
 
   //aqui sai o som
   tone(buzzer, 900, 300);
-  delay(500);
+
+  //delay(500);
+  pausa(500);
 }
 
 void playSuperMarioTheme()
