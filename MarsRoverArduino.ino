@@ -38,7 +38,7 @@
 //====================
 #define TRIG_PIN A4
 #define ECHO_PIN A5
-#define MIN_DISTANCE 30
+#define MIN_DISTANCE 20
 #define MAX_DISTANCE 200
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
