@@ -98,6 +98,14 @@ int melodia[] = {660, 660, 660, 510, 660, 770, 380};
 //=====================
 int duracaodasnotas[] = {100, 100, 100, 100, 100, 100, 100};
 
+//pausa depois das notas
+int pausadepoisdasnotas[] = {150, 300, 300, 100, 300, 550, 575};
+
+//=======================
+//constants won't change:
+//=======================
+const long interval = 20; // interval at which to blink (milliseconds)
+
 //=================
 // Varáveis Globais
 //=================
@@ -115,8 +123,10 @@ void setup()
   //================
   // [S] Servo Motor
   //================
-  myservo.attach(servo);
-  myservo.write(90);
+  myservo.attach(servo); // Liga controle do servo
+  myservo.write(90); // Movimenta o servo para a posição inicial
+  pausa(500); // Aguarda o termino do movimento
+  myservo.detach(); // Desliga o controle do servo
 
   //=============================
   // Pino 8 do arduino como saída
@@ -133,11 +143,6 @@ void setup()
   // Pino 12 do arduino como saída para o Buzzer
   //============================================
   pinMode(buzzer, OUTPUT);
-
-  //==========================================
-  // Realiza uma primeira leitura de distância
-  //==========================================
-  distance = readPing();
 }
 
 void loop()
@@ -149,6 +154,8 @@ void loop()
   {
     //Variável 'cmd' recebe o valor da porta Serial
     cmd = serial.read();
+
+    pausa(interval);
 
     switch (cmd)
     {
@@ -361,13 +368,15 @@ void loop()
     digitalWrite(LedEstado, HIGH); //Acende o LED quando o robô entrar  no modo autônomo.
     obstacleavoidance();
   }
-
-  //Delay(200)
-  pausa(200);
 }
 
 void obstacleavoidance()
 {
+  //==========================================
+  // Realiza uma primeira leitura de distância
+  //==========================================
+  distance = readPing();
+
   int distanceR = 0;
   int distanceL =  0;
 
@@ -376,7 +385,7 @@ void obstacleavoidance()
     moveStop();
     moveBackward();
 
-    //delay(300) - Recua por 300 milisegundos e pára
+    //Recua por 300 milisegundos e pára
     pausa(300);
 
     moveStop();
@@ -384,7 +393,7 @@ void obstacleavoidance()
     //Verifica distância à direita
     distanceR = lookSide(10);
 
-    //delay(200) - Espera 200 milisegundos
+    //Espera 200 milisegundos
     pausa(200);
 
     //Verifica distância à esquerda
@@ -396,6 +405,7 @@ void obstacleavoidance()
       serial.println(distanceR);
 
       turnRight();
+      pausa(350);
       moveStop();
     }
     else if (distanceL > MIN_DISTANCE)
@@ -404,6 +414,7 @@ void obstacleavoidance()
       serial.println(distanceL);
 
       turnLeft();
+      pausa(350);
       moveStop();
     }
     else
@@ -412,10 +423,7 @@ void obstacleavoidance()
       serial.println(distance);
 
       moveBackward();
-
-      //delay(300) - Recua por 500 milisegundos e pára
       pausa(300);
-
       moveStop();
     }
   }
@@ -426,22 +434,23 @@ void obstacleavoidance()
 
     moveForward();
   }
-
-  distance = readPing();
 }
 
 // Olha para o Lado
 int lookSide(int angulo)
 {
+  myservo.attach(servo); // Liga controle do servo
   myservo.write(angulo);
 
   int distance = readPing();
 
-  //delay(300) - tempAux
-  pausa(300);
+  //delay(500) - tempAux
+  pausa(500);
 
   //Retorna Servo para posição inicial
   myservo.write(90);
+  pausa(500);
+  myservo.detach(); // Desliga o controle do servo
 
   return distance;
 }
@@ -449,8 +458,14 @@ int lookSide(int angulo)
 // Lê Objetos Próximos
 int readPing()
 {
-  pausa(70);
+  pausa(30);
   int cm = sonar.ping_cm();
+
+  if (cm == 0)
+  {
+    cm = MAX_DISTANCE;
+  }
+
   return cm;
 }
 
@@ -495,9 +510,6 @@ void turnRight()
   //Move Right
   motorA.forward();
   motorB.backward();
-
-  pausa(350);
-  moveForward();
 }
 
 void turnLeft()
@@ -505,9 +517,6 @@ void turnLeft()
   //Move Left
   motorA.backward();
   motorB.forward();
-
-  pausa(350);
-  moveForward();
 }
 
 void playBuzzer()
@@ -543,10 +552,7 @@ void playSuperMarioTheme()
   {
     int duracaodanota = duracaodasnotas[nota];
     tone(buzzer, melodia[nota], duracaodanota);
-
-    //pausa depois das notas
-    int pausadepoisdasnotas[] = {150, 300, 300, 100, 300, 550, 575};
-    delay(pausadepoisdasnotas[nota]);
+    pausa(pausadepoisdasnotas[nota]);
   }
 
   noTone(buzzer);
