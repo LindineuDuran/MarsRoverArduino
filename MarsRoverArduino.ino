@@ -109,7 +109,8 @@ const long interval = 20; // interval at which to blink (milliseconds)
 //=================
 // Varáveis Globais
 //=================
-int distance = 100;
+float duration, distance;
+int iterations = 5;
 int autoMode = 0; //Indica quando o modo autônomo está ativado.
 int velocidade = 70; //Velocidade dos Motores
 
@@ -377,8 +378,8 @@ void obstacleavoidance()
   //==========================================
   distance = readPing();
 
-  int distanceR = 0;
-  int distanceL =  0;
+  float distanceR = 0;
+  float distanceL =  0;
 
   if (distance <= MIN_DISTANCE)
   {
@@ -437,12 +438,12 @@ void obstacleavoidance()
 }
 
 // Olha para o Lado
-int lookSide(int angulo)
+float lookSide(int angulo)
 {
   myservo.attach(servo); // Liga controle do servo
   myservo.write(angulo);
 
-  int distance = readPing();
+  float distance = readPing();
 
   //delay(500) - tempAux
   pausa(500);
@@ -456,17 +457,15 @@ int lookSide(int angulo)
 }
 
 // Lê Objetos Próximos
-int readPing()
+float readPing()
 {
-  pausa(30);
-  int cm = sonar.ping_cm();
+  duration = sonar.ping_median(iterations);
 
-  if (cm == 0)
-  {
-    cm = MAX_DISTANCE;
-  }
+  // Determine distance from duration
+  // Use 343 metres per second as speed of sound
+  distance = (duration / 2) * 0.0343;
 
-  return cm;
+  return distance;
 }
 
 void pausa(unsigned int milisegundos)
