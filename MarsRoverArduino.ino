@@ -39,7 +39,7 @@
 #define TRIG_PIN A4
 #define ECHO_PIN A5
 #define MIN_DISTANCE 20
-#define MAX_DISTANCE 200
+#define MAX_DISTANCE 400
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
 //========================================================
@@ -392,13 +392,13 @@ void obstacleavoidance()
     moveStop();
 
     //Verifica distância à direita
-    distanceR = lookSide(10);
+    distanceR = lookSide(5);
 
     //Espera 200 milisegundos
     pausa(200);
 
     //Verifica distância à esquerda
-    distanceL = lookSide(170);
+    distanceL = lookSide(175);
 
     if (distanceR >= distanceL && distanceR > MIN_DISTANCE)
     {
@@ -442,6 +442,9 @@ float lookSide(int angulo)
 {
   myservo.attach(servo); // Liga controle do servo
   myservo.write(angulo);
+
+  //delay(100) - tempAux
+  pausa(100);
 
   float distance = readPing();
 
